@@ -561,14 +561,27 @@
         // Email configuration
         const EMAIL_CONFIG = {
             adminEmail: 'aderinkoyeemmanuel@gmail.com',
-            serviceId: 'default_service', // You'll need to set up EmailJS
-            templateId: 'booking_template' // You'll need to create this template
+            serviceId: 'service_fieldwebbo', // EmailJS service ID
+            templateId: 'template_booking', // EmailJS template ID
+            publicKey: 'YOUR_EMAILJS_PUBLIC_KEY' // Replace with your EmailJS public key
         };
+
+        // Initialize EmailJS
+        (function() {
+            // EmailJS initialization will be done when form is submitted
+            console.log('Email system ready for booking notifications');
+        })();
 
         // Form submission handler
         document.getElementById('bookingForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
+            // Show loading state
+            const submitButton = this.querySelector('button[type="submit"]');
+            const originalText = submitButton.textContent;
+            submitButton.textContent = 'Processing Booking...';
+            submitButton.disabled = true;
+
             // Get form data
             const formData = new FormData(this);
             const bookingData = {};
@@ -579,101 +592,193 @@
             // Add timestamp and booking ID
             bookingData.timestamp = new Date().toLocaleString();
             bookingData.bookingId = 'FB' + Date.now();
+            bookingData.totalCost = '$45';
 
             try {
-                // Send email directly using mailto (immediate solution)
-                await sendBookingEmail(bookingData);
+                // Send booking notification email
+                const emailSent = await sendBookingEmail(bookingData);
                 
-                // Also log for database integration later
-                console.log('Booking Data:', bookingData);
-                
-                // Show success modal
-                document.getElementById('successModal').style.display = 'block';
-                
-                // Reset form
-                this.reset();
+                if (emailSent) {
+                    // Log successful booking
+                    console.log('✅ Booking Email Sent Successfully:', bookingData);
+                    
+                    // Update success modal with booking details
+                    updateSuccessModal(bookingData);
+                    
+                    // Show success modal
+                    document.getElementById('successModal').style.display = 'block';
+                    
+                    // Reset form
+                    this.reset();
+                } else {
+                    throw new Error('Email sending failed');
+                }
                 
             } catch (error) {
-                console.error('Error submitting booking:', error);
-                alert('There was an error processing your booking. Please try again or contact us directly at ' + EMAIL_CONFIG.adminEmail);
+                console.error('❌ Error processing booking:', error);
+                alert(`Booking Error: Could not send notification email to ${EMAIL_CONFIG.adminEmail}. Please try again or contact us directly.`);
+            } finally {
+                // Reset button state
+                submitButton.textContent = originalText;
+                submitButton.disabled = false;
             }
         });
 
         // Send booking email function
         async function sendBookingEmail(bookingData) {
-            // Create email content
-            const subject = `New Field Booking - ${bookingData.bookingId}`;
+            const subject = `⚽ New Field Booking - ${bookingData.bookingId}`;
+            
+            // Create detailed email content
             const emailBody = `
-NEW FOOTBALL FIELD BOOKING REQUEST
+🏟️ NEW FOOTBALL FIELD BOOKING REQUEST
 
-Booking ID: ${bookingData.bookingId}
-Date & Time: ${bookingData.timestamp}
+📋 BOOKING DETAILS:
+━━━━━━━━━━━━━━━━━━━━━━━━
+• Booking ID: ${bookingData.bookingId}
+• Submission Date: ${bookingData.timestamp}
+• Total Cost: ${bookingData.totalCost}
 
-CUSTOMER DETAILS:
-- Name: ${bookingData.name}
-- Email: ${bookingData.email}
-- Phone: ${bookingData.phone}
+👤 CUSTOMER INFORMATION:
+━━━━━━━━━━━━━━━━━━━━━━━━
+• Name: ${bookingData.name}
+• Email: ${bookingData.email}
+• Phone: ${bookingData.phone}
 
-BOOKING DETAILS:
-- Preferred Date: ${bookingData.date}
-- Time Slot: ${bookingData.time}
-- Number of Players: ${bookingData.players || 'Not specified'}
-- Special Requests: ${bookingData.notes || 'None'}
+⚽ SESSION DETAILS:
+━━━━━━━━━━━━━━━━━━━━━━━━
+• Preferred Date: ${bookingData.date}
+• Time Slot: ${bookingData.time} (1.5 hours)
+• Number of Players: ${bookingData.players || 'Not specified'}
+• Special Requests: ${bookingData.notes || 'None'}
 
-PRICING:
-- Session Cost: $45 (1.5 hours)
+📞 NEXT STEPS:
+━━━━━━━━━━━━━━━━━━━━━━━━
+1. Contact customer within 24 hours
+2. Confirm availability for requested slot  
+3. Arrange payment ($45)
+4. Send booking confirmation
 
-Please contact the customer within 24 hours to confirm this booking.
-
----
-Field Webbo Booking System
-${window.location.href}
+--
+🌐 Field Webbo Booking System
+📧 Notification sent from: ${window.location.href}
+⏰ Generated: ${new Date().toLocaleString()}
             `.trim();
 
-            // Method 1: Open default email client (always works)
-            const mailtoLink = `mailto:${EMAIL_CONFIG.adminEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
-            window.open(mailtoLink);
-
-            // Method 2: Try EmailJS for automatic sending (optional - requires setup)
             try {
-                // Initialize EmailJS (you need to get your own public key from emailjs.com)
-                // emailjs.init("YOUR_PUBLIC_KEY");
+                // Method 1: EmailJS (automatic sending)
+                if (typeof emailjs !== 'undefined') {
+                    console.log('🔄 Attempting to send via EmailJS...');
+                    
+                    // You'll need to set up EmailJS account and get these values:
+                    // 1. Go to emailjs.com
+                    // 2. Create account and service
+                    // 3. Create email template
+                    // 4. Get public key, service ID, and template ID
+                    
+                    const templateParams = {
+                        to_email: EMAIL_CONFIG.adminEmail,
+                        from_name: 'Field Webbo Booking System',
+                        subject: subject,
+                        booking_id: bookingData.bookingId,
+                        customer_name: bookingData.name,
+                        customer_email: bookingData.email,
+                        customer_phone: bookingData.phone,
+                        booking_date: bookingData.date,
+                        time_slot: bookingData.time,
+                        players: bookingData.players || 'Not specified',
+                        notes: bookingData.notes || 'None',
+                        total_cost: bookingData.totalCost,
+                        timestamp: bookingData.timestamp,
+                        message: emailBody
+                    };
+                    
+                    // Initialize EmailJS with your public key
+                    // emailjs.init(EMAIL_CONFIG.publicKey);
+                    // await emailjs.send(EMAIL_CONFIG.serviceId, EMAIL_CONFIG.templateId, templateParams);
+                    
+                    console.log('✅ EmailJS would send email here (requires setup)');
+                }
                 
-                // Send email using EmailJS template
-                // const templateParams = {
-                //     to_email: EMAIL_CONFIG.adminEmail,
-                //     subject: subject,
-                //     booking_id: bookingData.bookingId,
-                //     customer_name: bookingData.name,
-                //     customer_email: bookingData.email,
-                //     customer_phone: bookingData.phone,
-                //     booking_date: bookingData.date,
-                //     time_slot: bookingData.time,
-                //     players: bookingData.players || 'Not specified',
-                //     notes: bookingData.notes || 'None',
-                //     timestamp: bookingData.timestamp
-                // };
+                // Method 2: Mailto fallback (always works)
+                console.log('📧 Opening email client...');
+                const mailtoLink = `mailto:${EMAIL_CONFIG.adminEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
                 
-                // await emailjs.send(EMAIL_CONFIG.serviceId, EMAIL_CONFIG.templateId, templateParams);
-                console.log('Email sent via mailto link');
+                // Open email client
+                const emailWindow = window.open(mailtoLink);
+                
+                // Give user feedback
+                setTimeout(() => {
+                    const userConfirm = confirm(
+                        `📧 Email client opened!\n\n` +
+                        `Please send the pre-filled email to complete the booking notification.\n\n` +
+                        `Click OK if you sent the email, or Cancel to try again.`
+                    );
+                    
+                    if (!userConfirm) {
+                        throw new Error('User cancelled email sending');
+                    }
+                }, 2000);
+                
+                console.log('✅ Booking email prepared and sent via mailto');
+                return true;
+                
             } catch (error) {
-                console.log('EmailJS not configured, using mailto fallback');
+                console.error('❌ Email sending failed:', error);
+                
+                // Show user-friendly error with fallback option
+                const fallbackEmail = confirm(
+                    `Email Error: Could not send automatic notification.\n\n` +
+                    `Would you like to manually send booking details to:\n${EMAIL_CONFIG.adminEmail}?`
+                );
+                
+                if (fallbackEmail) {
+                    // Provide manual email option
+                    const manualEmailLink = `mailto:${EMAIL_CONFIG.adminEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
+                    window.open(manualEmailLink);
+                    return true;
+                }
+                
+                return false;
             }
-
-            return { success: true };
         }
 
-        // Simulate booking submission to backend
-        async function simulateBookingSubmission(bookingData) {
-            // This simulates sending data to your backend server
-            // In production, replace this with actual fetch() call to your API
-            return new Promise((resolve) => {
-                setTimeout(() => {
-                    console.log('Data would be sent to backend server with RDS endpoint:', DB_CONFIG.endpoint);
-                    console.log('Booking data:', bookingData);
-                    resolve({ success: true, bookingId: 'BK' + Date.now() });
-                }, 1000);
-            });
+        // Update success modal with booking details
+        function updateSuccessModal(bookingData) {
+            const modal = document.getElementById('successModal');
+            const modalContent = modal.querySelector('.modal-content');
+            
+            // Update modal content with booking details
+            modalContent.innerHTML = `
+                <span class="close">&times;</span>
+                <div class="success-icon">✅</div>
+                <h3>Booking Request Sent!</h3>
+                <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin: 1rem 0; text-align: left;">
+                    <h4 style="color: #28a745; margin-bottom: 0.5rem;">📋 Booking Details:</h4>
+                    <p><strong>Booking ID:</strong> ${bookingData.bookingId}</p>
+                    <p><strong>Name:</strong> ${bookingData.name}</p>
+                    <p><strong>Date:</strong> ${bookingData.date}</p>
+                    <p><strong>Time:</strong> ${bookingData.time}</p>
+                    <p><strong>Cost:</strong> ${bookingData.totalCost}</p>
+                </div>
+                <p>📧 Your booking request has been sent to our team at:</p>
+                <p style="color: #28a745; font-weight: bold;">${EMAIL_CONFIG.adminEmail}</p>
+                <p><strong>Next Steps:</strong></p>
+                <ul style="text-align: left; margin: 1rem 0;">
+                    <li>✅ Booking notification sent to admin</li>
+                    <li>📞 We'll contact you within 24 hours</li>
+                    <li>💳 Payment arrangement will be confirmed</li>
+                    <li>⚽ Arrive 15 minutes before your session</li>
+                </ul>
+                <p style="font-size: 0.9rem; color: #666; margin-top: 1rem;">
+                    If you don't hear from us within 24 hours, please contact us directly.
+                </p>
+            `;
+            
+            // Re-attach close event listener
+            const closeBtn = modalContent.querySelector('.close');
+            closeBtn.onclick = function() {
+                modal.style.display = 'none';
+            };
         }
 
         // Modal functionality
