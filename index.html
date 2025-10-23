@@ -579,7 +579,7 @@
             // Show loading state
             const submitButton = this.querySelector('button[type="submit"]');
             const originalText = submitButton.textContent;
-            submitButton.textContent = 'Processing Booking...';
+            submitButton.textContent = 'Opening WhatsApp...';
             submitButton.disabled = true;
 
             // Get form data
@@ -595,15 +595,15 @@
             bookingData.totalCost = '$45';
 
             try {
-                // Send booking notification email
-                const emailSent = await sendBookingEmail(bookingData);
+                // Send booking via WhatsApp
+                const whatsappSent = await sendBookingViaWhatsApp(bookingData);
                 
-                if (emailSent) {
+                if (whatsappSent) {
                     // Log successful booking
-                    console.log('✅ Booking Email Sent Successfully:', bookingData);
+                    console.log('✅ Booking Sent via WhatsApp:', bookingData);
                     
                     // Update success modal with booking details
-                    updateSuccessModal(bookingData);
+                    updateSuccessModalForWhatsApp(bookingData);
                     
                     // Show success modal
                     document.getElementById('successModal').style.display = 'block';
@@ -611,12 +611,12 @@
                     // Reset form
                     this.reset();
                 } else {
-                    throw new Error('Email sending failed');
+                    throw new Error('WhatsApp booking failed');
                 }
                 
             } catch (error) {
                 console.error('❌ Error processing booking:', error);
-                alert(`Booking Error: Could not send notification email to ${EMAIL_CONFIG.adminEmail}. Please try again or contact us directly.`);
+                alert(`Booking Error: Could not open WhatsApp for booking. Please try again or contact us directly at +2348169472068.`);
             } finally {
                 // Reset button state
                 submitButton.textContent = originalText;
@@ -742,7 +742,52 @@
             }
         }
 
-        // Update success modal with booking details
+        // Update success modal with booking details for WhatsApp
+        function updateSuccessModalForWhatsApp(bookingData) {
+            const modal = document.getElementById('successModal');
+            const modalContent = modal.querySelector('.modal-content');
+            
+            // Update modal content with WhatsApp booking details
+            modalContent.innerHTML = `
+                <span class="close">&times;</span>
+                <div class="success-icon">✅</div>
+                <h3>WhatsApp Booking Sent!</h3>
+                <div style="background: #25d366; color: white; padding: 1rem; border-radius: 8px; margin: 1rem 0;">
+                    <h4 style="margin-bottom: 0.5rem;">📱 WhatsApp Message Opened</h4>
+                    <p>Your booking details have been prepared and WhatsApp has opened with your message ready to send.</p>
+                </div>
+                <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin: 1rem 0; text-align: left;">
+                    <h4 style="color: #28a745; margin-bottom: 0.5rem;">📋 Your Booking Details:</h4>
+                    <p><strong>Booking ID:</strong> ${bookingData.bookingId}</p>
+                    <p><strong>Name:</strong> ${bookingData.name}</p>
+                    <p><strong>Date:</strong> ${bookingData.date}</p>
+                    <p><strong>Time:</strong> ${bookingData.time}</p>
+                    <p><strong>Cost:</strong> ${bookingData.totalCost}</p>
+                </div>
+                <p>📱 Your booking has been sent via WhatsApp to:</p>
+                <p style="color: #25d366; font-weight: bold;">+234 816 947 2068</p>
+                <p><strong>Next Steps:</strong></p>
+                <ul style="text-align: left; margin: 1rem 0;">
+                    <li>✅ Send the WhatsApp message that just opened</li>
+                    <li>📞 We'll respond on WhatsApp quickly</li>
+                    <li>💳 Payment details will be shared via WhatsApp</li>
+                    <li>⚽ Booking confirmation via WhatsApp</li>
+                </ul>
+                <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 0.75rem; border-radius: 5px; margin-top: 1rem;">
+                    <p style="font-size: 0.9rem; color: #856404; margin: 0;">
+                        💡 <strong>Tip:</strong> If WhatsApp didn't open automatically, you can manually message us at +234 816 947 2068
+                    </p>
+                </div>
+            `;
+            
+            // Re-attach close event listener
+            const closeBtn = modalContent.querySelector('.close');
+            closeBtn.onclick = function() {
+                modal.style.display = 'none';
+            };
+        }
+
+        // Update success modal with booking details (email version - kept for compatibility)
         function updateSuccessModal(bookingData) {
             const modal = document.getElementById('successModal');
             const modalContent = modal.querySelector('.modal-content');
@@ -795,9 +840,51 @@
             }
         }
 
+        // Send booking via WhatsApp
+        async function sendBookingViaWhatsApp(bookingData) {
+            const phoneNumber = '+2348169472068'; // Your WhatsApp number
+            
+            // Create detailed WhatsApp message
+            const message = `🏟️ *FIELD WEBBO BOOKING REQUEST*
+
+📋 *Booking Details:*
+• Booking ID: ${bookingData.bookingId}
+• Date: ${bookingData.timestamp}
+
+👤 *Customer Information:*
+• Name: ${bookingData.name}
+• Email: ${bookingData.email}
+• Phone: ${bookingData.phone}
+
+⚽ *Session Details:*
+• Preferred Date: ${bookingData.date}
+• Time Slot: ${bookingData.time}
+• Players: ${bookingData.players || 'Not specified'}
+• Special Requests: ${bookingData.notes || 'None'}
+
+💰 *Total Cost: ${bookingData.totalCost}*
+
+Please confirm availability and payment details. Thank you!`;
+
+            try {
+                // Create WhatsApp URL with booking details
+                const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+                
+                // Open WhatsApp
+                window.open(whatsappUrl, '_blank');
+                
+                console.log('✅ WhatsApp opened with booking details');
+                return true;
+                
+            } catch (error) {
+                console.error('❌ WhatsApp booking failed:', error);
+                return false;
+            }
+        }
+
         // Social media functions
         function openWhatsApp() {
-            const phoneNumber = '+15551234567'; // Replace with your actual WhatsApp number
+            const phoneNumber = '+2348169472068'; // Your WhatsApp number
             const message = 'Hi! I would like to book a session at Field Webbo.';
             const url = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
             window.open(url, '_blank');
