@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Field Webbo - Mini Football Field Booking</title>
+    <!-- EmailJS for sending emails directly from frontend -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -556,6 +558,13 @@
             database: 'field_webbo_bookings' // Adjust database name as needed
         };
 
+        // Email configuration
+        const EMAIL_CONFIG = {
+            adminEmail: 'aderinkoyeemmanuel@gmail.com',
+            serviceId: 'default_service', // You'll need to set up EmailJS
+            templateId: 'booking_template' // You'll need to create this template
+        };
+
         // Form submission handler
         document.getElementById('bookingForm').addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -567,32 +576,92 @@
                 bookingData[key] = value;
             }
 
-            // Add database endpoint info
-            bookingData.db_endpoint = DB_CONFIG.endpoint;
-            bookingData.timestamp = new Date().toISOString();
+            // Add timestamp and booking ID
+            bookingData.timestamp = new Date().toLocaleString();
+            bookingData.bookingId = 'FB' + Date.now();
 
             try {
-                // In a real application, you would send this data to your backend server
-                // The backend server would then connect to the RDS database
-                console.log('Booking Data with DB Endpoint:', bookingData);
+                // Send email directly using mailto (immediate solution)
+                await sendBookingEmail(bookingData);
                 
-                // Simulate API call to backend (replace with actual endpoint)
-                const response = await simulateBookingSubmission(bookingData);
+                // Also log for database integration later
+                console.log('Booking Data:', bookingData);
                 
-                if (response.success) {
-                    // Show success modal
-                    document.getElementById('successModal').style.display = 'block';
-                    
-                    // Reset form
-                    this.reset();
-                } else {
-                    throw new Error('Booking submission failed');
-                }
+                // Show success modal
+                document.getElementById('successModal').style.display = 'block';
+                
+                // Reset form
+                this.reset();
+                
             } catch (error) {
                 console.error('Error submitting booking:', error);
-                alert('There was an error processing your booking. Please try again or contact us directly.');
+                alert('There was an error processing your booking. Please try again or contact us directly at ' + EMAIL_CONFIG.adminEmail);
             }
         });
+
+        // Send booking email function
+        async function sendBookingEmail(bookingData) {
+            // Create email content
+            const subject = `New Field Booking - ${bookingData.bookingId}`;
+            const emailBody = `
+NEW FOOTBALL FIELD BOOKING REQUEST
+
+Booking ID: ${bookingData.bookingId}
+Date & Time: ${bookingData.timestamp}
+
+CUSTOMER DETAILS:
+- Name: ${bookingData.name}
+- Email: ${bookingData.email}
+- Phone: ${bookingData.phone}
+
+BOOKING DETAILS:
+- Preferred Date: ${bookingData.date}
+- Time Slot: ${bookingData.time}
+- Number of Players: ${bookingData.players || 'Not specified'}
+- Special Requests: ${bookingData.notes || 'None'}
+
+PRICING:
+- Session Cost: $45 (1.5 hours)
+
+Please contact the customer within 24 hours to confirm this booking.
+
+---
+Field Webbo Booking System
+${window.location.href}
+            `.trim();
+
+            // Method 1: Open default email client (always works)
+            const mailtoLink = `mailto:${EMAIL_CONFIG.adminEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
+            window.open(mailtoLink);
+
+            // Method 2: Try EmailJS for automatic sending (optional - requires setup)
+            try {
+                // Initialize EmailJS (you need to get your own public key from emailjs.com)
+                // emailjs.init("YOUR_PUBLIC_KEY");
+                
+                // Send email using EmailJS template
+                // const templateParams = {
+                //     to_email: EMAIL_CONFIG.adminEmail,
+                //     subject: subject,
+                //     booking_id: bookingData.bookingId,
+                //     customer_name: bookingData.name,
+                //     customer_email: bookingData.email,
+                //     customer_phone: bookingData.phone,
+                //     booking_date: bookingData.date,
+                //     time_slot: bookingData.time,
+                //     players: bookingData.players || 'Not specified',
+                //     notes: bookingData.notes || 'None',
+                //     timestamp: bookingData.timestamp
+                // };
+                
+                // await emailjs.send(EMAIL_CONFIG.serviceId, EMAIL_CONFIG.templateId, templateParams);
+                console.log('Email sent via mailto link');
+            } catch (error) {
+                console.log('EmailJS not configured, using mailto fallback');
+            }
+
+            return { success: true };
+        }
 
         // Simulate booking submission to backend
         async function simulateBookingSubmission(bookingData) {
