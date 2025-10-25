@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finalize Your Booking - Field Webbo</title>
+    <!-- EmailJS for sending emails directly from frontend -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #28a745, #20c997);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .booking-card {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            margin: 0 1rem;
+        }
+
+        .step-number {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #28a745;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+
+        .step-text {
+            font-weight: 500;
+            color: #28a745;
+        }
+
+        .booking-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            color: #28a745;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 1rem;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #28a745;
+            box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
+        }
+
+        .pricing-section {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        .price {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .price-details {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .booking-summary {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .summary-item:last-child {
+            border-bottom: none;
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #28a745;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(40, 167, 69, 0.4);
+        }
+
+        .btn-whatsapp {
+            background: linear-gradient(45deg, #25d366, #128c7e);
+            color: white;
+        }
+
+        .btn-whatsapp:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(37, 211, 102, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #545b62;
+            transform: translateY(-2px);
+        }
+
+        .payment-info {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+
+        .payment-info h4 {
+            color: #856404;
+            margin-bottom: 0.5rem;
+        }
+
+        .payment-info p {
+            color: #856404;
+            margin: 0;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 2rem;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        .success-icon {
+            font-size: 4rem;
+            color: #28a745;
+            margin-bottom: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .booking-form {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚽ Finalize Your Booking</h1>
+            <p>Complete your mini football field reservation</p>
+        </div>
+
+        <div class="booking-card">
+            <div class="step-indicator">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-text">Fill Details</div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-text">Review & Book</div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-text">Confirmation</div>
+                </div>
+            </div>
+
+            <form class="booking-form" id="finalBookingForm">
+                <!-- Pre-filled data indicator -->
+                <div id="prefilledIndicator" style="display: none; grid-column: 1 / -1; background: #d1ecf1; border: 1px solid #bee5eb; padding: 1rem; border-radius: 8px; text-align: center; margin-bottom: 1rem;">
+                    <h4 style="color: #0c5460; margin-bottom: 0.5rem;">📋 Information Loaded</h4>
+                    <p style="color: #0c5460; margin: 0;">Your booking details have been transferred from the main page. Please review and modify if needed.</p>
+                </div>
+
+                <div class="form-group">
+                    <label for="name">Full Name *</label>
+                    <input type="text" id="name" name="name" required placeholder="Enter your full name">
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email Address *</label>
+                    <input type="email" id="email" name="email" required placeholder="your.email@example.com">
+                </div>
+                
+                <div class="form-group">
+                    <label for="phone">Phone Number *</label>
+                    <input type="tel" id="phone" name="phone" required placeholder="+234 XXX XXX XXXX">
+                </div>
+                
+                <div class="form-group">
+                    <label for="date">Preferred Date *</label>
+                    <input type="date" id="date" name="date" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="time">Preferred Time *</label>
+                    <select id="time" name="time" required>
+                        <option value="">Select a time slot</option>
+                        <option value="08:00">08:00 - 09:30 (Morning)</option>
+                        <option value="10:00">10:00 - 11:30 (Morning)</option>
+                        <option value="12:00">12:00 - 13:30 (Afternoon)</option>
+                        <option value="14:00">14:00 - 15:30 (Afternoon)</option>
+                        <option value="16:00">16:00 - 17:30 (Evening)</option>
+                        <option value="18:00">18:00 - 19:30 (Evening)</option>
+                        <option value="20:00">20:00 - 21:30 (Night)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="players">Number of Players</label>
+                    <select id="players" name="players">
+                        <option value="">Select number of players</option>
+                        <option value="6">6 players (3v3)</option>
+                        <option value="8">8 players (4v4)</option>
+                        <option value="10">10 players (5v5)</option>
+                        <option value="12">12 players (6v6)</option>
+                        <option value="14">14 players (7v7)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label for="notes">Special Requests or Notes</label>
+                    <textarea id="notes" name="notes" rows="3" placeholder="Any special requirements, equipment needs, or additional information..."></textarea>
+                </div>
+            </form>
+
+            <div class="pricing-section">
+                <div class="price">$45</div>
+                <div class="price-details">
+                    For 1.5-hour session<br>
+                    Includes field rental, basic equipment, and facilities access
+                </div>
+            </div>
+
+            <div class="booking-summary" id="bookingSummary" style="display: none;">
+                <h4 style="margin-bottom: 1rem; color: #28a745;">📋 Booking Summary</h4>
+                <div class="summary-item">
+                    <span>Customer:</span>
+                    <span id="summaryName">-</span>
+                </div>
+                <div class="summary-item">
+                    <span>Date & Time:</span>
+                    <span id="summaryDateTime">-</span>
+                </div>
+                <div class="summary-item">
+                    <span>Players:</span>
+                    <span id="summaryPlayers">-</span>
+                </div>
+                <div class="summary-item">
+                    <span>Session Duration:</span>
+                    <span>1.5 hours</span>
+                </div>
+                <div class="summary-item">
+                    <span>Total Amount:</span>
+                    <span>$45</span>
+                </div>
+            </div>
+
+            <div class="payment-info">
+                <h4>💳 Payment Information</h4>
+                <p>Payment will be arranged after booking confirmation. We accept cash, bank transfer, or mobile money payments.</p>
+            </div>
+
+            <div class="action-buttons">
+                <button type="button" class="btn btn-whatsapp" id="bookViaWhatsApp">
+                    📱 Book via WhatsApp
+                </button>
+                <button type="button" class="btn btn-primary" id="bookViaEmail">
+                    📧 Book via Email
+                </button>
+                <a href="index.html" class="btn btn-secondary">
+                    ← Back to Main Page
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div class="success-icon">✅</div>
+            <h3>Booking Request Sent!</h3>
+            <div id="modalContent">
+                <!-- Dynamic content will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load booking data from main page if available
+        let prefilledData = {};
+        const storedData = sessionStorage.getItem('bookingData');
+        if (storedData) {
+            prefilledData = JSON.parse(storedData);
+            // Clear from session storage after loading
+            sessionStorage.removeItem('bookingData');
+        }
+
+        // Set minimum date to today
+        document.getElementById('date').min = new Date().toISOString().split('T')[0];
+
+        // WhatsApp and Email configuration
+        const CONTACT_CONFIG = {
+            whatsappNumber: '+2348169472068',
+            adminEmail: 'aderinkoyeemmanuel@gmail.com'
+        };
+
+        // Populate form with data from main page
+        function populateForm() {
+            if (Object.keys(prefilledData).length > 0) {
+                console.log('Loading booking data from main page:', prefilledData);
+                
+                // Show pre-filled indicator
+                document.getElementById('prefilledIndicator').style.display = 'block';
+                
+                // Fill form fields
+                Object.keys(prefilledData).forEach(key => {
+                    const field = document.getElementById(key);
+                    if (field && prefilledData[key]) {
+                        field.value = prefilledData[key];
+                        // Add visual indicator that field was pre-filled
+                        field.style.borderColor = '#28a745';
+                        field.style.backgroundColor = '#f8fff9';
+                    }
+                });
+                
+                // Update the header to show this is a continuation
+                document.querySelector('.header h1').textContent = '⚽ Confirm Your Booking';
+                document.querySelector('.header p').textContent = 'Review your details and choose how to submit your booking';
+                
+                // Update step indicator to show we're on step 2
+                const steps = document.querySelectorAll('.step-number');
+                if (steps[0]) steps[0].style.background = '#28a745';
+                if (steps[1]) steps[1].style.background = '#28a745';
+                
+                // Update booking summary immediately
+                updateBookingSummary();
+                
+                // Scroll to summary section after a brief delay
+                setTimeout(() => {
+                    const summary = document.getElementById('bookingSummary');
+                    if (summary && summary.style.display !== 'none') {
+                        summary.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }, 1000);
+            } else {
+                // If no pre-filled data, show normal flow
+                document.querySelector('.header h1').textContent = '⚽ Finalize Your Booking';
+                document.querySelector('.header p').textContent = 'Complete your mini football field reservation';
+            }
+        }
+
+        // Call populate function when page loads
+        window.addEventListener('load', populateForm);
+
+        // Update booking summary as user types
+        function updateBookingSummary() {
+            const name = document.getElementById('name').value;
+            const date = document.getElementById('date').value;
+            const time = document.getElementById('time').value;
+            const players = document.getElementById('players').value;
+
+            // Show summary if we have essential data
+            if (name || date || time) {
+                document.getElementById('bookingSummary').style.display = 'block';
+                document.getElementById('summaryName').textContent = name || 'Not specified';
+                document.getElementById('summaryDateTime').textContent = 
+                    date && time ? `${date} at ${time}` : 'Not specified';
+                document.getElementById('summaryPlayers').textContent = 
+                    players || 'Not specified';
+                    
+                // If we have pre-filled data, highlight the action buttons
+                if (Object.keys(prefilledData).length > 0 && name && date && time) {
+                    const actionButtons = document.querySelector('.action-buttons');
+                    actionButtons.style.background = '#f8f9fa';
+                    actionButtons.style.padding = '2rem';
+                    actionButtons.style.borderRadius = '15px';
+                    actionButtons.style.border = '2px solid #28a745';
+                    
+                    // Add a ready-to-book message
+                    let readyMessage = document.getElementById('readyMessage');
+                    if (!readyMessage) {
+                        readyMessage = document.createElement('div');
+                        readyMessage.id = 'readyMessage';
+                        readyMessage.innerHTML = `
+                            <div style="background: #d4edda; border: 1px solid #c3e6cb; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; text-align: center;">
+                                <h4 style="color: #155724; margin-bottom: 0.5rem;">✅ Ready to Submit!</h4>
+                                <p style="color: #155724; margin: 0;">Your booking details are complete. Choose your preferred contact method below.</p>
+                            </div>
+                        `;
+                        actionButtons.insertBefore(readyMessage, actionButtons.firstChild);
+                    }
+                }
+            } else {
+                document.getElementById('bookingSummary').style.display = 'none';
+            }
+        }
+
+        // Add event listeners to form fields
+        ['name', 'date', 'time', 'players'].forEach(fieldId => {
+            document.getElementById(fieldId).addEventListener('input', updateBookingSummary);
+            document.getElementById(fieldId).addEventListener('change', updateBookingSummary);
+        });
+
+        // Get booking data
+        function getBookingData() {
+            const formData = new FormData(document.getElementById('finalBookingForm'));
+            const bookingData = {};
+            for (let [key, value] of formData.entries()) {
+                bookingData[key] = value;
+            }
+            
+            bookingData.timestamp = new Date().toLocaleString();
+            bookingData.bookingId = 'FB' + Date.now();
+            bookingData.totalCost = '$45';
+            
+            return bookingData;
+        }
+
+        // Validate form
+        function validateForm() {
+            const required = ['name', 'email', 'phone', 'date', 'time'];
+            for (let field of required) {
+                const value = document.getElementById(field).value.trim();
+                if (!value) {
+                    alert(`Please fill in the ${field.charAt(0).toUpperCase() + field.slice(1)} field.`);
+                    document.getElementById(field).focus();
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        // Book via WhatsApp
+        document.getElementById('bookViaWhatsApp').addEventListener('click', function() {
+            if (!validateForm()) return;
+
+            const bookingData = getBookingData();
+            
+            const message = `🏟️ *FIELD WEBBO BOOKING REQUEST*
+
+📋 *Booking Details:*
+• Booking ID: ${bookingData.bookingId}
+• Date: ${bookingData.timestamp}
+
+👤 *Customer Information:*
+• Name: ${bookingData.name}
+• Email: ${bookingData.email}
+• Phone: ${bookingData.phone}
+
+⚽ *Session Details:*
+• Preferred Date: ${bookingData.date}
+• Time Slot: ${bookingData.time}
+• Players: ${bookingData.players || 'Not specified'}
+• Special Requests: ${bookingData.notes || 'None'}
+
+💰 *Total Cost: ${bookingData.totalCost}*
+
+Please confirm availability and payment details. Thank you!`;
+
+            const whatsappUrl = `https://wa.me/${CONTACT_CONFIG.whatsappNumber}?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+
+            // Show success modal
+            showSuccessModal('whatsapp', bookingData);
+        });
+
+        // Book via Email
+        document.getElementById('bookViaEmail').addEventListener('click', function() {
+            if (!validateForm()) return;
+
+            const bookingData = getBookingData();
+            
+            const subject = `⚽ New Field Booking - ${bookingData.bookingId}`;
+            const emailBody = `
+🏟️ NEW FOOTBALL FIELD BOOKING REQUEST
+
+📋 BOOKING DETAILS:
+━━━━━━━━━━━━━━━━━━━━━━━━
+• Booking ID: ${bookingData.bookingId}
+• Submission Date: ${bookingData.timestamp}
+• Total Cost: ${bookingData.totalCost}
+
+👤 CUSTOMER INFORMATION:
+━━━━━━━━━━━━━━━━━━━━━━━━
+• Name: ${bookingData.name}
+• Email: ${bookingData.email}
+• Phone: ${bookingData.phone}
+
+⚽ SESSION DETAILS:
+━━━━━━━━━━━━━━━━━━━━━━━━
+• Preferred Date: ${bookingData.date}
+• Time Slot: ${bookingData.time} (1.5 hours)
+• Number of Players: ${bookingData.players || 'Not specified'}
+• Special Requests: ${bookingData.notes || 'None'}
+
+📞 NEXT STEPS:
+━━━━━━━━━━━━━━━━━━━━━━━━
+1. Contact customer within 24 hours
+2. Confirm availability for requested slot  
+3. Arrange payment ($45)
+4. Send booking confirmation
+
+--
+🌐 Field Webbo Booking System
+📧 Generated: ${new Date().toLocaleString()}
+            `.trim();
+
+            const mailtoLink = `mailto:${CONTACT_CONFIG.adminEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
+            window.open(mailtoLink);
+
+            // Show success modal
+            showSuccessModal('email', bookingData);
+        });
+
+        // Show success modal
+        function showSuccessModal(method, bookingData) {
+            const modal = document.getElementById('successModal');
+            const modalContent = document.getElementById('modalContent');
+            
+            if (method === 'whatsapp') {
+                modalContent.innerHTML = `
+                    <div style="background: #25d366; color: white; padding: 1rem; border-radius: 8px; margin: 1rem 0;">
+                        <h4>📱 WhatsApp Message Sent!</h4>
+                        <p>Your booking request has been sent via WhatsApp</p>
+                    </div>
+                    <p><strong>Booking ID:</strong> ${bookingData.bookingId}</p>
+                    <p><strong>Contact:</strong> +234 816 947 2068</p>
+                    <p>We'll respond on WhatsApp shortly!</p>
+                `;
+            } else {
+                modalContent.innerHTML = `
+                    <div style="background: #28a745; color: white; padding: 1rem; border-radius: 8px; margin: 1rem 0;">
+                        <h4>📧 Email Prepared!</h4>
+                        <p>Your booking email has been prepared and opened</p>
+                    </div>
+                    <p><strong>Booking ID:</strong> ${bookingData.bookingId}</p>
+                    <p><strong>Email:</strong> ${CONTACT_CONFIG.adminEmail}</p>
+                    <p>Please send the email to complete your booking!</p>
+                `;
+            }
+            
+            modal.style.display = 'block';
+
+            // Reset form after successful booking
+            document.getElementById('finalBookingForm').reset();
+            document.getElementById('bookingSummary').style.display = 'none';
+        }
+
+        // Modal functionality
+        const modal = document.getElementById('successModal');
+        const span = document.getElementsByClassName('close')[0];
+
+        span.onclick = function() {
+            modal.style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        // Form validation enhancements
+        document.querySelectorAll('input[required], select[required]').forEach(field => {
+            field.addEventListener('blur', function() {
+                if (!this.value) {
+                    this.style.borderColor = '#dc3545';
+                } else {
+                    this.style.borderColor = '#28a745';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

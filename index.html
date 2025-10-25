@@ -537,6 +537,41 @@
         // Set minimum date to today
         document.getElementById('date').min = new Date().toISOString().split('T')[0];
 
+        // Form submission handler - collect data and redirect to booking page
+        document.getElementById('bookingForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Validate required fields
+            const requiredFields = ['name', 'email', 'phone', 'date', 'time'];
+            let isValid = true;
+            
+            for (let fieldId of requiredFields) {
+                const field = document.getElementById(fieldId);
+                if (!field.value.trim()) {
+                    field.style.borderColor = '#dc3545';
+                    field.focus();
+                    alert(`Please fill in the ${fieldId.charAt(0).toUpperCase() + fieldId.slice(1)} field.`);
+                    isValid = false;
+                    break;
+                }
+            }
+            
+            if (!isValid) return;
+
+            // Get form data
+            const formData = new FormData(this);
+            const bookingData = {};
+            for (let [key, value] of formData.entries()) {
+                bookingData[key] = value;
+            }
+
+            // Store booking data in sessionStorage to pass to booking page
+            sessionStorage.setItem('bookingData', JSON.stringify(bookingData));
+            
+            // Redirect to booking page
+            window.location.href = 'booking.html';
+        });
+
         // Smooth scrolling for navigation links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
@@ -572,57 +607,16 @@
             console.log('Email system ready for booking notifications');
         })();
 
-        // Form submission handler
-        document.getElementById('bookingForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            // Show loading state
-            const submitButton = this.querySelector('button[type="submit"]');
-            const originalText = submitButton.textContent;
-            submitButton.textContent = 'Opening WhatsApp...';
-            submitButton.disabled = true;
+        // Booking form is now on booking.html page
+        // Form submission handler moved to booking.html
 
-            // Get form data
-            const formData = new FormData(this);
-            const bookingData = {};
-            for (let [key, value] of formData.entries()) {
-                bookingData[key] = value;
-            }
-
-            // Add timestamp and booking ID
-            bookingData.timestamp = new Date().toLocaleString();
-            bookingData.bookingId = 'FB' + Date.now();
-            bookingData.totalCost = '$45';
-
-            try {
-                // Send booking via WhatsApp
-                const whatsappSent = await sendBookingViaWhatsApp(bookingData);
-                
-                if (whatsappSent) {
-                    // Log successful booking
-                    console.log('✅ Booking Sent via WhatsApp:', bookingData);
-                    
-                    // Update success modal with booking details
-                    updateSuccessModalForWhatsApp(bookingData);
-                    
-                    // Show success modal
-                    document.getElementById('successModal').style.display = 'block';
-                    
-                    // Reset form
-                    this.reset();
-                } else {
-                    throw new Error('WhatsApp booking failed');
-                }
-                
-            } catch (error) {
-                console.error('❌ Error processing booking:', error);
-                alert(`Booking Error: Could not open WhatsApp for booking. Please try again or contact us directly at +2348169472068.`);
-            } finally {
-                // Reset button state
-                submitButton.textContent = originalText;
-                submitButton.disabled = false;
-            }
-        });
+        // Social media functions
+        function openWhatsApp() {
+            const phoneNumber = '+2348169472068'; // Your WhatsApp number
+            const message = 'Hi! I would like to book a session at Field Webbo.';
+            const url = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+            window.open(url, '_blank');
+        }
 
         // Send booking email function
         async function sendBookingEmail(bookingData) {
