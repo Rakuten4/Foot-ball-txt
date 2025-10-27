@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Field Webbo - Mini Football Field Booking</title>
+    <title>FFS SPORT ARENA - Mini Football Field Booking</title>
     <!-- EmailJS for sending emails directly from frontend -->
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <style>
@@ -336,12 +336,194 @@
             color: #28a745;
             margin-bottom: 1rem;
         }
+
+        /* Welcome Popup Styles */
+        .welcome-popup {
+            display: flex;
+            position: fixed;
+            z-index: 3000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+        }
+
+        .welcome-content {
+            background: linear-gradient(135deg, #28a745, #20c997, #17a2b8);
+            margin: auto;
+            padding: 2rem;
+            border-radius: 20px;
+            width: 85%;
+            max-width: 500px;
+            max-height: 85vh;
+            text-align: center;
+            color: white;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
+            animation: popupSlideIn 0.6s ease-out;
+            overflow-y: auto;
+        }
+
+        .welcome-content::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: rotate(45deg);
+            animation: shimmer 2s infinite;
+        }
+
+        .welcome-title {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            position: relative;
+            z-index: 1;
+        }
+
+        .welcome-message {
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+            position: relative;
+            z-index: 1;
+        }
+
+        .welcome-message strong {
+            color: #ffd700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .continue-btn {
+            background: linear-gradient(45deg, #ffd700, #ffed4e);
+            color: #333;
+            padding: 1rem 2.5rem;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            z-index: 1;
+            box-shadow: 0 8px 25px rgba(255, 215, 0, 0.4);
+        }
+
+        .continue-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 15px 35px rgba(255, 215, 0, 0.6);
+            background: linear-gradient(45deg, #ffed4e, #ffd700);
+        }
+
+        .arena-icon {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes popupSlideIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.8) translateY(-50px);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        @keyframes popupSlideOut {
+            0% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(0.8) translateY(-50px);
+            }
+        }
+
+        @keyframes shimmer {
+            0% {
+                transform: translateX(-100%) translateY(-100%) rotate(45deg);
+            }
+            100% {
+                transform: translateX(100%) translateY(100%) rotate(45deg);
+            }
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-20px);
+            }
+            60% {
+                transform: translateY(-10px);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .welcome-content {
+                padding: 1.5rem;
+                margin: 0.5rem;
+                max-height: 90vh;
+            }
+            
+            .welcome-title {
+                font-size: 1.6rem;
+            }
+            
+            .welcome-message {
+                font-size: 0.9rem;
+                margin-bottom: 1rem;
+            }
+            
+            .continue-btn {
+                padding: 0.8rem 1.8rem;
+                font-size: 1rem;
+            }
+
+            .arena-icon {
+                font-size: 2.5rem;
+                margin-bottom: 0.3rem;
+            }
+        }
     </style>
 </head>
 <body>
+    <!-- Welcome Popup -->
+    <div id="welcomePopup" class="welcome-popup">
+        <div class="welcome-content">
+            <div class="arena-icon">🏟️</div>
+            <div class="welcome-title">**Welcome to FFS SPORT ARENA!** 🏅</div>
+            <div class="welcome-message">
+                Where <strong>passion meets performance</strong> and <strong>every game tells a story.</strong><br>
+                Step onto the turf, feel the energy, and unleash your winning spirit!<br><br>
+                
+                Whether you're here to <strong>train, compete, or cheer</strong>,<br>
+                FFS SPORT ARENA is your home for <strong>teamwork, excitement, and unforgettable moments.</strong><br><br>
+                
+                🔥 <strong>Play hard. Stay strong. Make history — only at FFS!</strong> 🔥
+            </div>
+            <button class="continue-btn" onclick="closeWelcomePopup()">Continue to Home</button>
+        </div>
+    </div>
+
     <header>
         <nav>
-            <div class="logo">Field Webbo</div>
+            <div class="logo">FFS SPORT ARENA</div>
             <ul class="nav-links">
                 <li><a href="#home">Home</a></li>
                 <li><a href="#booking">Book Now</a></li>
@@ -374,7 +556,7 @@
         </section>
 
         <section id="features" class="section">
-            <h2>Why Choose Field Webbo?</h2>
+            <h2>Why Choose FFS SPORT ARENA?</h2>
             <div class="features">
                 <div class="feature-card">
                     <div class="feature-icon">⚽</div>
@@ -501,10 +683,10 @@
             </div>
             <div class="contact-item">
                 <span>✉️</span>
-                <span>info@fieldwebbo.com</span>
+                <span>info@ffssportarena.com</span>
             </div>
         </div>
-        <p>&copy; 2025 Field Webbo. All rights reserved.</p>
+        <p>&copy; 2025 FFS SPORT ARENA. All rights reserved.</p>
     </footer>
 
     <!-- Success Modal -->
@@ -542,6 +724,21 @@
     -->
 
     <script>
+        // Welcome Popup Functions
+        function closeWelcomePopup() {
+            const popup = document.getElementById('welcomePopup');
+            popup.style.animation = 'popupSlideOut 0.4s ease-in forwards';
+            setTimeout(() => {
+                popup.style.display = 'none';
+            }, 400);
+        }
+
+        // Show welcome popup on page load
+        window.addEventListener('load', function() {
+            const popup = document.getElementById('welcomePopup');
+            popup.style.display = 'flex';
+        });
+
         // Set minimum date to today
         document.getElementById('date').min = new Date().toISOString().split('T')[0];
 
@@ -887,13 +1084,13 @@ Please confirm availability and payment details. Thank you!`;
         // Social media functions
         function openWhatsApp() {
             const phoneNumber = '+2348169472068'; // Your WhatsApp number
-            const message = 'Hi! I would like to book a session at Field Webbo.';
+            const message = 'Hi! I would like to book a session at FFS SPORT ARENA.';
             const url = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
             window.open(url, '_blank');
         }
 
         function openTikTok() {
-            const tiktokUrl = 'https://www.tiktok.com/@fieldwebbo'; // Replace with your actual TikTok handle
+            const tiktokUrl = 'https://www.tiktok.com/@ffssportarena'; // Replace with your actual TikTok handle
             window.open(tiktokUrl, '_blank');
         }
 
